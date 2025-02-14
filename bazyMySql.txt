@@ -1,0 +1,330 @@
+-- TWORZENIE TABEL
+-- Zdefiniowanie typów kolumn zgodnie z wymaganiami serwera.
+-- Ustawienie odpowiednich kolumn jako unikalne i/lub opcjonalne.
+-- Zdefiniowanie kluczy głównych i obcych dla powiązania tabel.
+CREATE TABLE Dane_logowania (
+  id_logowania   INT(10) NOT NULL,
+  data_logowania date NOT NULL,
+  id_uzytkownika INT(10) NOT NULL,
+  PRIMARY KEY (id_logowania, id_uzytkownika));
+
+CREATE TABLE Osiagniecia (
+  id_osiagniecia INT(10) auto_increment,
+  ocena          varchar(255) NOT NULL,
+  PRIMARY KEY (id_osiagniecia));
+
+CREATE TABLE Osiagniecia_Uzytkownik (
+  Osiagnieciaid_osiagniecia INT(10) NOT NULL,
+  Uzytkownikid_uzytkownika  INT(10) NOT NULL,
+  data                      date NOT NULL,
+  PRIMARY KEY (Osiagnieciaid_osiagniecia,
+  Uzytkownikid_uzytkownika));
+
+CREATE TABLE Plan_posilkow (
+  id_planu    INT(10) auto_increment,
+  nazwa_planu varchar(255) NOT NULL UNIQUE,
+  PRIMARY KEY (id_planu));
+ALTER TABLE Plan_posilkow
+DROP INDEX nazwa_planu;
+
+CREATE TABLE Posilki (
+  id_posilku          INT(10) auto_increment,
+  nazwa_posilku       varchar(255) NOT NULL UNIQUE,
+  kcal_posilku        INT(4) NOT NULL,
+  tluszcz_posilku     float(10) NOT NULL,
+  bialka_posilku      float(10) NOT NULL,
+  weglowodany_posilku float(10) NOT NULL,
+  sol_posilku         float(10) NOT NULL,
+  PRIMARY KEY (id_posilku));
+
+CREATE TABLE Posilki_Plan_posilkow (
+  Posilkiid_posilku     INT(10) NOT NULL,
+  Plan_posilkowid_planu INT(10) NOT NULL,
+  PRIMARY KEY (Posilkiid_posilku,
+  Plan_posilkowid_planu));
+
+CREATE TABLE Posilki_Rodzaj_diety (
+  Posilkiid_posilku      INT(10) NOT NULL,
+  Rodzaj_dietyid_rodzaju INT(10) NOT NULL,
+  PRIMARY KEY (Posilkiid_posilku,
+  Rodzaj_dietyid_rodzaju));
+
+CREATE TABLE Posilki_Skladniki (
+  Posilkiid_posilku     INT(10) NOT NULL,
+  Skladnikiid_skladnika INT(10) NOT NULL,
+  PRIMARY KEY (Posilkiid_posilku,
+  Skladnikiid_skladnika));
+
+CREATE TABLE Preferencje (
+  id_preferencji  INT(10) NOT NULL,
+  cel             varchar(255) NOT NULL,
+  alergie_wyjatki INT(10) NOT NULL,
+  ilosc_posilkow  INT(1) DEFAULT 5 NOT NULL,
+  PRIMARY KEY (id_preferencji));
+
+CREATE TABLE Rodzaj_diety (
+  id_rodzaju  INT(10) auto_increment,
+  nazwa_diety varchar(255) NOT NULL UNIQUE,
+  PRIMARY KEY (id_rodzaju));
+
+CREATE TABLE Skladniki (
+  id_skladnika    INT(10) auto_increment,
+  nazwa_skladnika varchar(255) NOT NULL UNIQUE,
+  kcal            float(10) NOT NULL,
+  tluszcz         float(10) NOT NULL,
+  bialka          float(10) NOT NULL,
+  weglowodany     float(10) NOT NULL,
+  sol             float(10) NOT NULL,
+  PRIMARY KEY (id_skladnika));
+
+CREATE TABLE Uzytkownik (
+  id_uzytkownika INT(10) auto_increment,
+  imie           varchar(255) NOT NULL,
+  nazwisko       varchar(255) NOT NULL,
+  wiek           INT(2) NOT NULL CHECK (wiek BETWEEN 18 AND 99),
+  wzrost         INT(3) NOT NULL,
+  waga           INT(3) NOT NULL,
+  email          varchar(255) NOT NULL UNIQUE,
+  haslo          varchar(10) NOT NULL,
+  plec           varchar(1),
+  id_planu       INT(10),
+  PRIMARY KEY (id_uzytkownika));
+
+ALTER TABLE Preferencje ADD CONSTRAINT FKPreferencj735605 FOREIGN KEY (alergie_wyjatki) REFERENCES Skladniki (id_skladnika);
+ALTER TABLE Uzytkownik ADD CONSTRAINT FKUzytkownik939445 FOREIGN KEY (id_planu) REFERENCES Plan_posilkow (id_planu);
+ALTER TABLE Dane_logowania ADD CONSTRAINT FKDane_logow532698 FOREIGN KEY (id_uzytkownika) REFERENCES Uzytkownik (id_uzytkownika);
+ALTER TABLE Posilki_Rodzaj_diety ADD CONSTRAINT FKPosilki_Ro433362 FOREIGN KEY (Posilkiid_posilku) REFERENCES Posilki (id_posilku);
+ALTER TABLE Posilki_Rodzaj_diety ADD CONSTRAINT FKPosilki_Ro143797 FOREIGN KEY (Rodzaj_dietyid_rodzaju) REFERENCES Rodzaj_diety (id_rodzaju);
+ALTER TABLE Osiagniecia_Uzytkownik ADD CONSTRAINT FKOsiagnieci428199 FOREIGN KEY (Osiagnieciaid_osiagniecia) REFERENCES Osiagniecia (id_osiagniecia);
+ALTER TABLE Posilki_Skladniki ADD CONSTRAINT FKPosilki_Sk910290 FOREIGN KEY (Posilkiid_posilku) REFERENCES Posilki (id_posilku);
+ALTER TABLE Posilki_Skladniki ADD CONSTRAINT FKPosilki_Sk516588 FOREIGN KEY (Skladnikiid_skladnika) REFERENCES Skladniki (id_skladnika);
+ALTER TABLE Posilki_Plan_posilkow ADD CONSTRAINT FKPosilki_Pl337303 FOREIGN KEY (Posilkiid_posilku) REFERENCES Posilki (id_posilku);
+ALTER TABLE Posilki_Plan_posilkow ADD CONSTRAINT FKPosilki_Pl675965 FOREIGN KEY (Plan_posilkowid_planu) REFERENCES Plan_posilkow (id_planu);
+ALTER TABLE Osiagniecia_Uzytkownik ADD CONSTRAINT FKOsiagnieci511642 FOREIGN KEY (Uzytkownikid_uzytkownika) REFERENCES Uzytkownik (id_uzytkownika);
+ALTER TABLE Preferencje ADD CONSTRAINT FKPreferencj244422 FOREIGN KEY (id_preferencji) REFERENCES Uzytkownik (id_uzytkownika);
+
+
+-- Zdefiniowanie użytkowników bazy danych i nadanie im odpowiednich uprawnień.
+-- Tworzenie użytkownika
+-- CREATE USER 'test'@'localhost' IDENTIFIED BY 'Haslo123.';
+
+-- Nadawanie uprawnień dla tabeli "Uzytkownik"
+GRANT SELECT, UPDATE ON Uzytkownik TO klient;
+
+-- Nadawanie uprawnień dla tabeli "Osiagniecia"
+GRANT SELECT ON Osiagniecia TO klient;
+
+-- Nadawanie uprawnień dla tabeli "Preferencje"
+GRANT SELECT, INSERT, UPDATE, DELETE ON Preferencje TO klient;
+
+-- Nadawanie uprawnień dla tabeli "Plan_posilkow"
+GRANT SELECT, UPDATE ON Plan_posilkow TO klient;
+
+-- Nadawanie uprawnień dla tabeli "Posilki"
+GRANT SELECT, INSERT ON Posilki TO klient;
+
+-- Nadawanie uprawnień dla tabeli "Skladniki"
+GRANT SELECT, INSERT ON Skladniki TO klient;
+
+-- Nadawanie uprawnień dla tabeli "Rodzaj diety"
+GRANT SELECT, UPDATE ON Rodzaj_diety TO klient;
+
+-- Odjęcie wszystkich uprawnień dla tabeli "Dane_logowania"
+REVOKE ALL ON Dane_logowania FROM klient;
+
+-- WYZWALACZE
+
+-- Wyzwalacz zwiększający wartosci posilku (kcal, białko, sól, eglowodany i tłuszcze), po dodaniu mu kolejnego skladnika
+CREATE TRIGGER zwieksz_wartosci_po_dodaniu_skladnika
+AFTER INSERT ON Posilki_Skladniki
+FOR EACH ROW
+BEGIN
+	DECLARE  
+    v_kcal_skladnika Skladniki.kcal%TYPE,
+    v_bialko_skladnika Skladniki.bialka%TYPE,
+    v_sol_skladnika Skladniki.sol%TYPE,
+    v_weglowodany_skladnika Skladniki.weglowodany%TYPE,
+    v_tluszcz_skladnika Skladniki.tluszcz%TYPE;
+
+    -- Pobranie wartości składnika dodanego do posiłku
+    SELECT kcal, bialka, sol, weglowodany, tluszcz
+    INTO v_kcal_skladnika, v_bialko_skladnika, v_sol_skladnika, v_weglowodany_skladnika, v_tluszcz_skladnika
+    FROM Skladniki
+    WHERE id_skladnika = NEW.Skladnikiid_skladnika;
+
+    -- Aktualizacja wartości składników w Posilki
+    UPDATE Posilki
+    SET kcal_posilku = kcal_posilku + v_kcal_skladnika,
+        bialka_posilku = bialka_posilku + v_bialko_skladnika,
+        sol_posilku = sol_posilku + v_sol_skladnika,
+        weglowodany_posilku = weglowodany_posilku + v_weglowodany_skladnika,
+        tluszcz_posilku = tluszcz_posilku + v_tluszcz_skladnika
+    WHERE id_posilku = NEW.Posilkiid_posilku;
+END;
+/
+
+-- Wyzwalacz zmieniajacy wartości w posiłkach do których należy składnik po zmianie wartosci tego skladnika
+CREATE TRIGGER aktualizuj_wartosci_w_posilkach_po_zmianie_skladnika
+AFTER UPDATE ON Skladniki
+FOR EACH ROW
+BEGIN
+    UPDATE Posilki P
+    SET P.kcal_posilku = P.kcal_posilku + (NEW.kcal - OLD.kcal),
+        P.bialka_posilku = P.bialka_posilku + (NEW.bialka - OLD.bialka),
+        P.tluszcz_posilku = P.tluszcz_posilku + (NEW.tluszcz - OLD.tluszcz),
+        P.weglowodany_posilku = P.weglowodany_posilku + (NEW.weglowodany - OLD.weglowodany),
+        P.sol_posilku = P.sol_posilku + (NEW.sol - OLD.sol)
+    WHERE P.id_posilku IN (
+        SELECT PS.Posilkiid_posilku
+        FROM Posilki_Skladniki PS
+        WHERE PS.Skladnikiid_skladnika = :NEW.id_skladnika
+    );
+END;
+/
+
+-- Wyzwalacz dodający dane do tabeli Dane_logowania po każdym zalogowaniu się klienta
+CREATE TRIGGER dodaj_logowanie_po_zalogowaniu
+AFTER LOGON ON klient.schema
+BEGIN
+    INSERT INTO Dane_logowania (id_logowania, data_logowania, id_uzytkownika)
+    VALUES (seq_dane_logowania.NEXTVAL, SYSDATE, (SELECT id_uzytkownika FROM Uzytkownik WHERE username = USER));
+END;
+
+-- Wyzwalacze odpowiedzialne za usuwanie danych z tabeli łączaych (zastosowanych w relacjach wiele do wielu), jesli któryś z rekordów został usunięty
+CREATE TRIGGER usun_powiazane_dane_po_usunieciu_posilku
+AFTER DELETE ON Posilki
+FOR EACH ROW
+BEGIN
+    -- Usunięcie rekordów z Posilki_Rodzaj_diety dla usuwanego posilku
+    DELETE FROM Posilki_Rodzaj_diety
+    WHERE Posilkiid_posilku = OLD.id_posilku;
+
+    -- Usunięcie rekordów z Posilki_Skladniki dla usuwanego posilku
+    DELETE FROM Posilki_Skladniki
+    WHERE Posilkiid_posilku = OLD.id_posilku;
+
+    -- Usunięcie rekordów z Posilki_Plan_posilkow dla usuwanego posilku
+    DELETE FROM Posilki_Plan_posilkow
+    WHERE Posilkiid_posilku = OLD.id_posilku;
+END;
+
+
+CREATE TRIGGER usun_powiazane_dane_po_usunieciu_skladnika
+BEFORE DELETE ON Skladniki
+FOR EACH ROW
+BEGIN
+    -- Usunięcie rekordów z Posilki_Skladniki dla usuwanego skladnika
+    DELETE FROM Posilki_Skladniki
+    WHERE Skladnikiid_skladnika = OLD.id_skladnika;
+END;
+
+
+CREATE TRIGGER usun_powiazane_dane_po_usunieciu_uzytkownika
+AFTER DELETE ON Uzytkownik
+FOR EACH ROW
+BEGIN
+    -- Usunięcie rekordów z Osiagniecia_Uzytkownik dla usuwanego użytkownika
+    DELETE FROM Osiagniecia_Uzytkownik
+    WHERE Uzytkownikid_uzytkownika = OLD.id_uzytkownika;
+
+    -- Usunięcie preferencji dla usuwanego użytkownika
+    DELETE FROM Preferencje
+    WHERE id_preferencji = OLD.id_uzytkownika;
+END;
+/
+-- Funkcja sprawdzająca, czy posiłek spełnia kryteria diety
+CREATE FUNCTION CzyPosilekSpelniaKryteriaDiety (p_id_posilku INT, p_id_rodzaju_diety INT) RETURN BOOLEAN
+AS
+  v_liczba_posilkow NUMBER;
+BEGIN
+  SELECT COUNT(*)
+  INTO v_liczba_posilkow
+  FROM Posilki_Rodzaj_diety
+  WHERE Posilkiid_posilku = p_id_posilku AND Rodzaj_dietyid_rodzaju = p_id_rodzaju_diety;
+  
+  RETURN v_liczba_posilkow > 0;
+END;
+/
+
+-- Funkcja zwracająca liczbę osiągnięć danego użytkownika
+CREATE FUNCTION PobierzLiczbeOsiagniecUzytkownika(p_id_uzytkownika INT) RETURN INT
+AS
+  v_liczba_osiagniec NUMBER;
+BEGIN
+  SELECT COUNT(*)
+  INTO v_liczba_osiagniec
+  FROM Osiagniecia_Uzytkownik
+  WHERE Uzytkownikid_uzytkownika = p_id_uzytkownika;
+
+  RETURN v_liczba_osiagniec;
+END;
+/
+
+-- Funkcja zwracająca liczbę składników w danym posiłku
+CREATE OR REPLACE FUNCTION PobierzLiczbeSkladnikowWPosilku(p_id_posilku INT) RETURN INT
+AS
+  v_liczba_skladnikow INT;
+BEGIN
+  SELECT COUNT(*)
+  INTO v_liczba_skladnikow
+  FROM Posilki_Skladniki
+  WHERE Posilkiid_posilku = p_id_posilku;
+
+  RETURN v_liczba_skladnikow;
+END;
+/
+
+-- Procedura aktualizująca preferencje danego użytkownika
+CREATE PROCEDURE AktualizujPreferencjeUzytkownika(
+  p_id_uzytkownika INT,
+  p_cel VARCHAR(255),
+  p_alergie_wyjatki INT,
+  p_ilosc_posilkow INT
+)
+AS
+BEGIN
+  UPDATE Preferencje
+  SET cel = p_cel,
+      alergie_wyjatki = p_alergie_wyjatki,
+      ilosc_posilkow = p_ilosc_posilkow
+  WHERE id_preferencji = p_id_uzytkownika;
+
+  COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+    DBMS_OUTPUT.PUT_LINE('Błąd podczas aktualizacji preferencji.');
+END;
+
+SELECT*FROM Uzytkownik;
+INSERT INTO Plan_posilkow (id_planu, nazwa_planu)
+VALUES (1, 'Plan redukcyjny 1500 kcal');
+INSERT INTO Uzytkownik (imie, nazwisko, wiek, wzrost, waga, email, haslo, id_planu)
+VALUES ('Jan', 'Kowalski', 30, 180, 80, 'jan.kowalski@gmail.com', 'haslo123', 1);
+INSERT INTO Rodzaj_diety (id_rodzaju, nazwa_diety)
+VALUES (1, 'Mięsna');
+INSERT INTO Posilki (id_posilku, nazwa_posilku, kcal_posilku, tluszcz_posilku, bialka_posilku, weglowodany_posilku, sol_posilku)
+VALUES (1, 'jajecznica', 150, 11, 10, 2, 1);
+INSERT INTO Skladniki (id_skladnika, nazwa_skladnika, kcal, tluszcz, bialka, weglowodany, sol)
+VALUES (1, 'pomidor', 18, 0.2, 0.9, 3.9, 0.02);
+INSERT INTO Preferencje (id_preferencji, cel, alergie_wyjatki, ilosc_posilkow)  
+VALUES (1, 'Utrata wagi', 1, 3);
+INSERT INTO Posilki_Plan_posilkow (Posilkiid_posilku, Plan_posilkowid_planu)
+VALUES (1, 1);
+INSERT INTO Posilki_Rodzaj_diety (Posilkiid_posilku, Rodzaj_dietyid_rodzaju)
+VALUES (1, 1);
+INSERT INTO Posilki_Skladniki (Posilkiid_posilku, Skladnikiid_skladnika)
+VALUES (1, 1);
+INSERT INTO Posilki (nazwa_posilku, kcal_posilku, tluszcz_posilku, bialka_posilku, weglowodany_posilku, sol_posilku)
+VALUES ('serniki', 250, 15, 5, 20, 1);
+INSERT INTO Posilki (nazwa_posilku, kcal_posilku, tluszcz_posilku, bialka_posilku, weglowodany_posilku, sol_posilku)
+VALUES ('carbonara', 350, 15, 15, 30, 1);
+INSERT INTO Skladniki (id_skladnika, nazwa_skladnika, kcal, tluszcz, bialka, weglowodany, sol)
+VALUES (2, 'jajko', 143,  9.3, 12.6, 1.1, 0.4);
+INSERT INTO Posilki_Skladniki (Posilkiid_posilku, Skladnikiid_skladnika)
+VALUES (1, 2);
+INSERT INTO Posilki_Plan_posilkow (Posilkiid_posilku, Plan_posilkowid_planu)
+VALUES (1, 1);
+INSERT INTO Skladniki (nazwa_skladnika, kcal, tluszcz, bialka, weglowodany, sol)
+VALUES ('bulka', 265, 2.3, 8, 50, 1.2);
+
